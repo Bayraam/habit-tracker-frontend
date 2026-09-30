@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="bs">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Habit Tracker</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body class="bg-light">
+
+    <!-- Navigacija -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container">
+            <a class="navbar-brand fw-bold" href="#">🔥 Habit Tracker</a>
+            <div class="d-flex align-items-center text-white d-none" id="user-info">
+                <span class="me-3">Korisnik: <strong id="nav-username">-</strong></span>
+                <span class="badge bg-warning text-dark me-3" id="nav-league">BRONZE</span>
+                <span class="badge bg-primary me-3" id="nav-points">0 XP</span>
+                <button class="btn btn-outline-light btn-sm" onclick="logout()">Odjava</button>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container my-4">
+
+        <!-- 1. AUTENTIFIKACIJA -->
+        <div id="auth-section" class="row justify-content-center">
+            <div class="col-md-5">
+                <div class="card shadow">
+                    <div class="card-body p-4">
+                        <h3 class="card-title text-center mb-4" id="auth-title">Prijava</h3>
+                        <form id="auth-form" onsubmit="handleAuth(event)">
+                            <div class="mb-3">
+                                <label class="form-label">Korisničko ime</label>
+                                <input type="text" class="form-control" id="auth-username" required>
+                            </div>
+                            <div class="mb-3 d-none" id="email-group">
+                                <label class="form-label">Email adresa</label>
+                                <input type="email" class="form-control" id="auth-email">
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Lozinka</label>
+                                <input type="password" class="form-control" id="auth-password" required>
+                            </div>
+                            <button type="submit" class="btn btn-primary w-100" id="auth-submit-btn">Prijavi se</button>
+                        </form>
+                        <div class="text-center mt-3">
+                            <small id="auth-toggle-text">Nemate račun? <a href="#"
+                                    onclick="toggleAuthMode(event)">Registrujte se</a></small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 2. DASHBOARD -->
+        <div id="dashboard-section" class="d-none">
+            <div class="row mb-4">
+                <div class="col-md-4 mb-2">
+                    <div class="card text-white bg-primary shadow-sm">
+                        <div class="card-body text-center">
+                            <h6 class="card-title">Ukupno bodova</h6>
+                            <h2 class="fw-bold" id="dash-points">0</h2>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4 mb-2">
+                    <div class="card text-dark bg-warning shadow-sm">
+                        <div class="card-body text-center">
+                            <h6 class="card-title">Trenutna Liga</h6>
+                            <h2 class="fw-bold" id="dash-league">BRONZE</h2>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4 mb-2">
+                    <div class="card text-white bg-info shadow-sm">
+                        <div class="card-body text-center">
+                            <h6 class="card-title">Do sljedeće lige</h6>
+                            <h2 class="fw-bold" id="dash-next-league">0 XP</h2>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h4>Moje Navike</h4>
+                <button class="btn btn-success" onclick="openAddHabitModal()">+ Nova Navika</button>
+            </div>
+
+            <div class="row" id="habits-list">
+                <!-- Dinamički unosi -->
+            </div>
+
+            <div class="row mt-5">
+                <div class="col-12">
+                    <div class="card shadow-sm">
+                        <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center">
+                            <h5 class="mb-0">🏆 Rang Lista (Leaderboard)</h5>
+                            <button class="btn btn-sm btn-outline-light" onclick="loadLeaderboard()">Osvježi</button>
+                        </div>
+                        <div class="card-body p-0">
+                            <table class="table table-hover mb-0">
+                                <thead>
+                                    <tr>
+                                        <th>#</th>
+                                        <th>Korisnik</th>
+                                        <th>Bodovi</th>
+                                        <th>Liga</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="leaderboard-tbody">
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Modal za dodavanje navike -->
+    <div class="modal fade" id="addHabitModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Dodaj novu naviku</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <form id="add-habit-form" onsubmit="createHabit(event)">
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label class="form-label">Naziv navike</label>
+                            <input type="text" class="form-control" id="habit-title" required
+                                placeholder="npr. Čitanje knjige">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Opis</label>
+                            <textarea class="form-control" id="habit-desc" rows="2"></textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Tip navike</label>
+                            <select class="form-select" id="habit-type" onchange="toggleQuantitativeFields()">
+                                <option value="BOOLEAN">Da / Ne (Obična)</option>
+                                <option value="QUANTITATIVE">Kvantitativna (Sa ciljem/količinom)</option>
+                            </select>
+                        </div>
+
+                        <!-- Novo polje: Učestalost ponavljanja -->
+                        <div class="mb-3">
+                            <label class="form-label">Učestalost (Ponavljanje)</label>
+                            <select class="form-select" id="habit-frequency">
+                                <option value="DAILY" selected>Svaki dan</option>
+                                <option value="ONCE">Samo danas (obriši nakon izvođenja)</option>
+                                <option value="WEEKLY">Sedmično</option>
+                                <option value="MONTHLY">Mjesečno</option>
+                                <option value="YEARLY">Godišnje</option>
+                            </select>
+                        </div>
+
+                        <div id="quant-fields" class="d-none">
+                            <div class="mb-3">
+                                <label class="form-label">Ciljna vrijednost</label>
+                                <input type="number" step="0.1" class="form-control" id="habit-target"
+                                    placeholder="npr. 20">
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Jedinica mjere</label>
+                                <input type="text" class="form-control" id="habit-unit"
+                                    placeholder="npr. stranica, minuta, km">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Zatvori</button>
+                        <button type="submit" class="btn btn-primary">Sačuvaj naviku</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal za logovanje -->
+    <div class="modal fade" id="logHabitModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Zabilježi napredak</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <form id="log-habit-form" onsubmit="submitHabitLog(event)">
+                    <div class="modal-body">
+                        <input type="hidden" id="log-habit-id">
+
+                        <div class="mb-3 d-none" id="log-val-group">
+                            <label class="form-label">Ostvarena količina (<span id="log-unit-label"></span>)</label>
+                            <input type="number" step="0.1" class="form-control" id="log-value">
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Ocjena dana (1 - 10)</label>
+                            <input type="number" min="1" max="10" class="form-control" id="log-rating" value="10"
+                                required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Kratki komentar / bilješka</label>
+                            <textarea class="form-control" id="log-reflection" rows="2"
+                                placeholder="Kako je prošlo danas?"></textarea>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Odustani</button>
+                        <button type="submit" class="btn btn-success">Sačuvaj napredak</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Kartica za Prodavnicu i Streak Freeze -->
+    <div class="card shadow-sm border-0 my-3 p-3 text-center">
+        <h5 class="fw-bold">🛒 Prodavnica</h5>
+        <p class="mb-1">Imate: <strong id="dash-freeze-count" class="text-primary fs-5">0</strong> 🛡️ Streak Freeze</p>
+        <small class="text-muted d-block mb-3">
+            1x Streak Freeze automatski štiti tvoje streakove u ponoć ako zaboraviš unijeti naviku. Cijena: <strong>15
+                XP</strong>.
+        </small>
+        <div>
+            <button class="btn btn-warning btn-sm px-4 fw-bold" onclick="buyStreakFreeze()">
+                Kupi Streak Freeze (15 XP)
+            </button>
+        </div>
+    </div>
+
+
+
+    <!-- VAŽNO: Bootstrap JS MURA BITI PRIJE app.js -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="app.js"></script>
+</body>
+
+</html>
